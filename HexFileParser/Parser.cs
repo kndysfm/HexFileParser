@@ -33,16 +33,21 @@ namespace HexFileParser
         private IFormat _ihex;
         private IFormat _srec;
 
+        public enum HexFormat
+        {
+            INTEL_HEX = ':', S_RECORD = 'S'
+        }
+
         public Parser()
         {
             _ihex = new InterlHexFormat();
             _srec = new SRecordFormat();
-            ResetDecoding();
+            Reset();
         }
 
         private int _addressOffset;
         public Binary DecodedData { get; private set; }
-        public void ResetDecoding()
+        public void Reset()
         {
             _addressOffset = 0x0;
             DecodedData = new Binary();
@@ -86,6 +91,27 @@ namespace HexFileParser
                     break;
                 default: return;
             }
+        }
+
+        internal string EncodeLineWithFormat(Line l, HexFormat fmt)
+        {
+            if (l.Type == LineType.Data)
+                l.Address = l.Address - _addressOffset; // cuurent offset
+
+            char[] a;
+            switch(fmt)
+            {
+                case HexFormat.INTEL_HEX:
+                    a = _ihex.EncodeLine(l);
+                    break;
+                case HexFormat.S_RECORD:
+                    a = _srec.EncodeLine(l);
+                    break;
+                default:
+                    a = new char[] { };
+                    break;
+            }
+            return new String(a);
         }
     }
 }

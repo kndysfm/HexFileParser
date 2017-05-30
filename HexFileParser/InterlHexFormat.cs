@@ -81,9 +81,64 @@ namespace HexFileParser
             return l;
         }
 
+        private byte genChecksum(IEnumerable<byte> vals)
+        {
+            var sum = 0x00;
+            foreach (var v in vals) sum += v;
+            return (byte) ((0x00 - sum) & 0xff);
+        }
+
+        private char[] genCharArray(IEnumerable<byte> vals)
+        {
+            var a = new List<char>();
+            a.Add(':');
+            foreach(var v in vals)
+            {
+                foreach (var c in v.ToString("X2").ToCharArray())
+                    a.Add(c);
+            }
+            return a.ToArray();
+        }
+
         public char[] EncodeLine(Parser.Line l)
         {
-            throw new NotImplementedException();
+            var vals = new List<byte>();
+            vals.Add((byte)l.Data.Count());
+            switch (l.Type)
+            {
+                case Parser.LineType.Data:
+                    vals.Add((byte)(l.Address >> 8));
+                    vals.Add((byte)(l.Address & 0xff));
+                    vals.Add(CODE_DATA);
+                    break;
+                case Parser.LineType.Offset:
+                    vals.Add(0x00);
+                    vals.Add(0x00);
+                    if ((l.Address & 0xFF000000) != 0)
+                    {   // xxxx0000H
+                        vals.Add(CODE_EX_LIN_ADDR);
+                        vals.Add((byte)(l.Address >> 24));
+                        vals.Add((byte)(l.Address >> 16));
+                    }
+                    else
+                    {   // 00xxxx00H
+                        vals.Add(CODE_EX_SEG_ADDR);
+                        vals.Add((byte)(l.Address >> 16));
+                        vals.Add((byte)(l.Address >> 8));
+                    }
+                    break;
+                case Parser.LineType.Termination:
+                    vals.Add(0x00);
+                    vals.Add(0x00);
+                    vals.Add(CODE_EOF);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+            vals = vals.Concat(l.Data).ToList();
+            vals.Add(genChecksum(vals));
+
+            return genCharArray(vals);
         }
     }
 }
