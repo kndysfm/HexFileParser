@@ -29,6 +29,15 @@ namespace HexFileParser
             {
                 _data = _data.Concat(data).ToArray();
             }
+
+            internal void Copy(int address, byte[] src, int idx_src, int length)
+            {
+                var idx_dst = address - StartAddress;
+                for (int i = 0; i < length; i++)
+                {
+                    _data[idx_dst++] = src[idx_src++];
+                }
+            }
         }
 
         public static byte DefaultValueInBlank { get; set; }
@@ -39,13 +48,14 @@ namespace HexFileParser
 
         public byte ValueInBlank { get; set; }
         internal List<Block> Blocks { get; private set; }
-        private bool _terminated = false;
+        public bool IsTerminated { get; internal set; }
         public string HeaderString { get; set; }
         
         internal Binary()
         {
             ValueInBlank = DefaultValueInBlank;
             Blocks = new List<Block>();
+            IsTerminated = false;
         }
 
         public byte[] GetData(int startAddress, int length)
@@ -71,7 +81,7 @@ namespace HexFileParser
 
         internal void AddData(int startAddress, byte[] data)
         {
-            if (_terminated) return;
+            if (IsTerminated) return; // cannot add data anymore
 
             var blk = Blocks.FirstOrDefault(b => b.EndAddress == startAddress);
             if (blk != null)
@@ -84,9 +94,23 @@ namespace HexFileParser
             }
         }
 
-        internal void SetTermination()
+        public bool ModifyData(int startAddress, byte[] src, int length)
         {
-            _terminated = true;
+            return ModifyData(startAddress, src, 0, length);
+        }
+
+        public bool ModifyData(int startAddress, byte[] src, int indexSrc, int length)
+        {
+            if (!IsTerminated) return false; // loading is not completed
+            if (length > src.Length - indexSrc) return false;
+
+            var region_start = startAddress;
+            var region_end = startAddress + length;
+            var blk = Blocks.FirstOrDefault(b => b.StartAddress <= region_start && region_end <= b.EndAddress);
+            if (blk == null) return false;
+
+            blk.Copy(startAddress, src, indexSrc, length);
+            return true;
         }
     }
 }

@@ -85,5 +85,27 @@ namespace UnitTestHexFileParser
             CollectionAssert.AreEqual(
                 new byte[] { 0x05, 0x39, 0x05, 0x3F, 0x00, 0x0F, 0x01, 0x06 }, dat);
         }
+
+        [TestMethod]
+        public void TestMethodModifying()
+        {
+            var str =
+                ":020000021000EC\r\n" +
+                ":10010000000C0104BF04D9047F003301049F048163\r\n" +
+                ":10011000049D0033000509051B0527003300052950\r\n" +
+                ":100120000539053F000F010673065A065800000105\r\n" +
+                ":100130000967091109060005010E3B0E790DB6008D\r\n" +
+                ":0801400005010E120DBA0DB805\r\n" +
+                ":00000001FF\r\n";
+
+            var p = new Parser();
+            p.DecodeLines(str);
+            p.DecodedData.ModifyData(0x100142,
+                new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44 }, 2, 3);
+
+            var dat = p.DecodedData.GetData(0x100140, 8);
+            CollectionAssert.AreEqual(
+                new byte[] { 0x05, 0x01, 0x22, 0x33, 0x44, 0xBA, 0x0D, 0xB8 }, dat);
+        }
     }
 }

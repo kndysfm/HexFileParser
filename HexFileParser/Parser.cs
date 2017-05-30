@@ -89,7 +89,7 @@ namespace HexFileParser
                     _addressOffset = l.Address;
                     break;
                 case LineType.Termination:
-                    DecodedData.SetTermination();
+                    DecodedData.IsTerminated = true;
                     _addressOffset = 0x0;
                     break;
                 default: return;
