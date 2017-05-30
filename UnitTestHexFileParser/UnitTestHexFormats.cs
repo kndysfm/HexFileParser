@@ -44,7 +44,7 @@ namespace UnitTestHexFileParser
 
             var p = new Parser();
             var str = p.EncodeLineWithFormat(l, Parser.HexFormat.INTEL_HEX);
-            Assert.AreEqual(":10010000000C0104BF04D9047F003301049F048163", str);
+            Assert.AreEqual(":10010000000C0104BF04D9047F003301049F048163\r\n", str);
         }
 
         [TestMethod]
@@ -103,7 +103,7 @@ namespace UnitTestHexFileParser
 
             var p = new Parser();
             var str = p.EncodeLineWithFormat(l, Parser.HexFormat.S_RECORD);
-            Assert.AreEqual("S214000100000C0104BF04D9047F003301049F04815E", str);
+            Assert.AreEqual("S214000100000C0104BF04D9047F003301049F04815E\r\n", str);
         }
 
         [TestMethod]

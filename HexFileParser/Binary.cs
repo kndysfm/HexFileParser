@@ -40,6 +40,7 @@ namespace HexFileParser
         public byte ValueInBlank { get; set; }
         internal List<Block> Blocks { get; private set; }
         private bool _terminated = false;
+        public string HeaderString { get; set; }
         
         internal Binary()
         {

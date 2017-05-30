@@ -134,7 +134,7 @@ namespace HexFileParser
                     vals.Add((byte)(l.Address & 0xff));
                     break;
                 case Parser.LineType.Offset:
-                    throw new NotImplementedException();
+                    return null; // no definition
                 case Parser.LineType.Termination:
                     vals.Add(CODE_TERMINATE24);
                     vals.Add(len);

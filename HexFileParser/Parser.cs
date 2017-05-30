@@ -21,7 +21,7 @@ namespace HexFileParser
             public LineType Type { set; get; }
             public int Address { set; get; }
             public byte[] Data { get; set; }
-            public bool Valid;
+            public bool Valid { set; get; }
         }
 
         internal interface IFormat
@@ -55,17 +55,19 @@ namespace HexFileParser
 
         internal Line DecodeLineWithFormat(string str)
         {
-            Line l;
+            Line l = null;
             var a = str.ToCharArray();
-            switch (a[0])
+            if (a.Length != 0)
             {
-                case ':':
-                    l = _ihex.DecodeLine(a);
-                    break;
-                case 'S':
-                    l = _srec.DecodeLine(a);
-                    break;
-                default: return null;
+                switch (a[0])
+                {
+                    case ':':
+                        l = _ihex.DecodeLine(a);
+                        break;
+                    case 'S':
+                        l = _srec.DecodeLine(a);
+                        break;
+                }
             }
             return l;
         }
@@ -73,12 +75,12 @@ namespace HexFileParser
         public void DecodeLine(string str)
         {
             Line l = DecodeLineWithFormat(str);
-            if (l == null) return;
-
+            if (l == null || !l.Valid) return;
             switch (l.Type)
             {
                 case LineType.Header:
                     _addressOffset = 0x0;
+                    DecodedData.HeaderString = new String(l.Data.Select(b => (char)b).ToArray());
                     break;
                 case LineType.Data:
                     DecodedData.AddData(l.Address + _addressOffset, l.Data);
@@ -88,17 +90,26 @@ namespace HexFileParser
                     break;
                 case LineType.Termination:
                     DecodedData.SetTermination();
+                    _addressOffset = 0x0;
                     break;
                 default: return;
             }
+        }
+
+        public void DecodeLines(string str)
+        {
+            var lns = str.Split('\n');
+            foreach (var l in lns) DecodeLine(l);
         }
 
         internal string EncodeLineWithFormat(Line l, HexFormat fmt)
         {
             if (l.Type == LineType.Data)
                 l.Address = l.Address - _addressOffset; // cuurent offset
+            else if (l.Type == LineType.Offset)
+                _addressOffset = l.Address;
 
-            char[] a;
+            char[] a = null;
             switch(fmt)
             {
                 case HexFormat.INTEL_HEX:
@@ -107,11 +118,42 @@ namespace HexFileParser
                 case HexFormat.S_RECORD:
                     a = _srec.EncodeLine(l);
                     break;
-                default:
-                    a = new char[] { };
-                    break;
             }
-            return new String(a);
+            return (a == null)? "": new String(a) + "\r\n";
+        }
+
+        public string EncodeStoredData(HexFormat fmt, byte lineLength)
+        {
+            var str = "";
+            Line l = new Line();
+            l.Valid = true;
+            foreach (var blk in DecodedData.Blocks)
+            {
+                int remains = blk.Length;
+                int addr = blk.StartAddress;
+                if ((addr & 0xffff0000) != 0)
+                {
+                    l.Type = LineType.Offset;
+                    l.Address = (int)(addr & 0xffff0000);
+                    l.Data = new byte[] { };
+                    str += EncodeLineWithFormat(l, fmt);
+                }
+                while (remains > 0)
+                {
+                    l.Type = LineType.Data;
+                    l.Address = addr;
+                    l.Data = DecodedData.GetData(addr, Math.Min(lineLength, remains));
+                    str += EncodeLineWithFormat(l, fmt);
+                    remains -= l.Data.Length;
+                    addr += l.Data.Length;
+                }
+            }
+            l.Type = LineType.Termination;
+            l.Address = 0x0;
+            l.Data = new byte[] { };
+            str += EncodeLineWithFormat(l, fmt);
+
+            return str;
         }
     }
 }

@@ -103,17 +103,21 @@ namespace HexFileParser
         public char[] EncodeLine(Parser.Line l)
         {
             var vals = new List<byte>();
-            vals.Add((byte)l.Data.Count());
             switch (l.Type)
             {
+                case Parser.LineType.Header:
+                    return null; // no definition
                 case Parser.LineType.Data:
+                    vals.Add((byte)l.Data.Count());
                     vals.Add((byte)(l.Address >> 8));
                     vals.Add((byte)(l.Address & 0xff));
                     vals.Add(CODE_DATA);
+                    vals = vals.Concat(l.Data).ToList();
                     break;
                 case Parser.LineType.Offset:
-                    vals.Add(0x00);
-                    vals.Add(0x00);
+                    vals.Add(0x02); // byte count
+                    vals.Add(0x00); // address H
+                    vals.Add(0x00); // address L
                     if ((l.Address & 0xFF000000) != 0)
                     {   // xxxx0000H
                         vals.Add(CODE_EX_LIN_ADDR);
@@ -128,14 +132,14 @@ namespace HexFileParser
                     }
                     break;
                 case Parser.LineType.Termination:
-                    vals.Add(0x00);
-                    vals.Add(0x00);
+                    vals.Add(0x00); // byte count
+                    vals.Add(0x00); // address H
+                    vals.Add(0x00); // address L
                     vals.Add(CODE_EOF);
                     break;
                 default:
                     throw new NotImplementedException();
             }
-            vals = vals.Concat(l.Data).ToList();
             vals.Add(genChecksum(vals));
 
             return genCharArray(vals);
