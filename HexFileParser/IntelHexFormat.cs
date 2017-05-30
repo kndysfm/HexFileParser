@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HexFileParser
 {
-    internal class InterlHexFormat : Parser.IFormat
+    internal class IntelHexFormat : Parser.IFormat
     {
         public const byte CODE_DATA = 0x00; // Data
         public const byte CODE_EOF = 0x01; // End Of Filr

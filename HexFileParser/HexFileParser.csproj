@@ -41,7 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Binary.cs" />
-    <Compile Include="InterlHexFormat.cs" />
+    <Compile Include="IntelHexFormat.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SRecordFormat.cs" />

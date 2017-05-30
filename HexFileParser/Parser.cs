@@ -40,7 +40,7 @@ namespace HexFileParser
 
         public Parser()
         {
-            _ihex = new InterlHexFormat();
+            _ihex = new IntelHexFormat();
             _srec = new SRecordFormat();
             Reset();
         }
