@@ -11,13 +11,13 @@ namespace HexFileParser
 {
     public class Binary
     {
-        internal class Block
+        public class Block
         {
             private byte[] _data;
-            internal IEnumerable<byte> Data { get { return _data; } }
-            internal int StartAddress { get; private set; }
-            internal int EndAddress { get { return StartAddress + Length; } }
-            internal int Length { get { return _data.Length; } }
+            public IEnumerable<byte> Data { get { return _data; } }
+            public int StartAddress { get; private set; }
+            public int EndAddress { get { return StartAddress + Length; } }
+            public int Length { get { return _data.Length; } }
 
             internal Block(int address, byte[] data)
             {
@@ -47,14 +47,15 @@ namespace HexFileParser
         }
 
         public byte ValueInBlank { get; set; }
-        internal List<Block> Blocks { get; private set; }
+        private List<Block> _blocks;
+        public IEnumerable<Block> Blocks { get { return _blocks; } }
         public bool IsTerminated { get; internal set; }
         public string HeaderString { get; set; }
         
         internal Binary()
         {
             ValueInBlank = DefaultValueInBlank;
-            Blocks = new List<Block>();
+            _blocks = new List<Block>();
             IsTerminated = false;
         }
 
@@ -63,10 +64,10 @@ namespace HexFileParser
             var region_start = startAddress;
             var region_end = startAddress + length;
             // filter
-            var blocks = Blocks.Where(b => region_start < b.StartAddress + b.Length && b.StartAddress < region_end).ToList();
+            var blocks = _blocks.Where(b => region_start < b.StartAddress + b.Length && b.StartAddress < region_end).ToList();
             blocks.Sort((a, b) => a.StartAddress - b.StartAddress);
 
-            var data = Enumerable.Repeat<byte>(ValueInBlank, length).ToArray(); // fill by blank value
+            var data = Enumerable.Repeat(ValueInBlank, length).ToArray(); // fill by blank value
             
             foreach(var b in blocks)
             {
@@ -83,14 +84,14 @@ namespace HexFileParser
         {
             if (IsTerminated) return; // cannot add data anymore
 
-            var blk = Blocks.FirstOrDefault(b => b.EndAddress == startAddress);
+            var blk = _blocks.FirstOrDefault(b => b.EndAddress == startAddress);
             if (blk != null)
             {
                 blk.Append(data);
             }
             else
             {
-                Blocks.Add(new Block(startAddress, data));
+                _blocks.Add(new Block(startAddress, data));
             }
         }
 
@@ -106,7 +107,7 @@ namespace HexFileParser
 
             var region_start = startAddress;
             var region_end = startAddress + length;
-            var blk = Blocks.FirstOrDefault(b => b.StartAddress <= region_start && region_end <= b.EndAddress);
+            var blk = _blocks.FirstOrDefault(b => b.StartAddress <= region_start && region_end <= b.EndAddress);
             if (blk == null) return false;
 
             blk.Copy(startAddress, src, indexSrc, length);
