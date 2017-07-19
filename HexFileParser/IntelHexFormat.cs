@@ -15,6 +15,8 @@ namespace HexFileParser
         public const byte CODE_EX_LIN_ADDR = 0x04; // Extended Linear Address
         public const byte CODE_ST_LIN_ADDR = 0x05; // Start Linear Address
 
+        private uint _regCS, _regIP, _regEIP; // for 80x86 system (ignored)
+
         private byte[] genByteArray(char[] a)
         {
             var vals = new List<byte>();
@@ -68,14 +70,25 @@ namespace HexFileParser
                 case CODE_EX_SEG_ADDR:
                     l.Type = Parser.LineType.Offset;
                     if (len != 2) l.Valid = false;
-                    else l.Address = (vals[4] << 16) | (vals[5] << 8);
+                    else l.Address = (vals[4] << 12) | (vals[5] << 4);
                     break;
                 case CODE_ST_SEG_ADDR:
-                    throw new NotImplementedException();
+                    if (len != 4) l.Valid = false;
+                    else
+                    {
+                        _regCS = ((uint)vals[4] << 8) | ((uint)vals[5] << 0);
+                        _regIP = ((uint)vals[6] << 8) | ((uint)vals[7] << 0);
+                    }
+                    break;
                 case CODE_EX_LIN_ADDR:
-                    throw new NotImplementedException();
+                    l.Type = Parser.LineType.Offset;
+                    if (len != 2) l.Valid = false;
+                    else l.Address = (vals[4] << 24) | (vals[5] << 16);
+                    break;
                 case CODE_ST_LIN_ADDR:
-                    throw new NotImplementedException();
+                    if (len != 2) l.Valid = false;
+                    else _regEIP = ((uint)vals[4] << 24) | ((uint)vals[5] << 16)| ((uint)vals[6] << 8) | ((uint)vals[7] << 0);
+                    break;
             }
 
             return l;
