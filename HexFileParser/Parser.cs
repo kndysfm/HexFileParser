@@ -45,6 +45,11 @@ namespace HexFileParser
             Reset();
         }
 
+        public Parser(int startAddress, byte[] bin): this()
+        {
+            DecodedData.AddData(startAddress, bin);
+        }
+
         private int _addressOffset;
         public Binary DecodedData { get; private set; }
         public void Reset()

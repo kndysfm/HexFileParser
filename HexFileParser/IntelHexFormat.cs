@@ -131,17 +131,17 @@ namespace HexFileParser
                     vals.Add(0x02); // byte count
                     vals.Add(0x00); // address H
                     vals.Add(0x00); // address L
-                    if ((l.Address & 0xFF000000) != 0)
+                    if ((l.Address & 0xFFF00000) != 0)
                     {   // xxxx0000H
                         vals.Add(CODE_EX_LIN_ADDR);
                         vals.Add((byte)(l.Address >> 24));
                         vals.Add((byte)(l.Address >> 16));
                     }
                     else
-                    {   // 00xxxx00H
+                    {   // 000xxxx0H
                         vals.Add(CODE_EX_SEG_ADDR);
-                        vals.Add((byte)(l.Address >> 16));
-                        vals.Add((byte)(l.Address >> 8));
+                        vals.Add((byte)(l.Address >> 12));
+                        vals.Add((byte)(l.Address >> 4));
                     }
                     break;
                 case Parser.LineType.Termination:
