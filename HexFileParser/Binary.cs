@@ -9,14 +9,32 @@ using System.Threading.Tasks;
 
 namespace HexFileParser
 {
+    /// <summary>
+    /// Binary data parsed from Hex format string
+    /// </summary>
     public class Binary
     {
+        /// <summary>
+        /// Binary bulk data with continuous address
+        /// </summary>
         public class Block
         {
             private byte[] _data;
+            /// <summary>
+            /// Collection data as byte
+            /// </summary>
             public IEnumerable<byte> Data { get { return _data; } }
+            /// <summary>
+            /// Address the binary block starts
+            /// </summary>
             public int StartAddress { get; private set; }
+            /// <summary>
+            /// Address the binary block ends (Data does not include a value in this address)
+            /// </summary>
             public int EndAddress { get { return StartAddress + Length; } }
+            /// <summary>
+            /// Length of Data in the Block
+            /// </summary>
             public int Length { get { return _data.Length; } }
 
             internal Block(int address, byte[] data)
@@ -39,17 +57,31 @@ namespace HexFileParser
                 }
             }
         }
-
+        /// <summary>
+        /// This value will be set as a default for ValueInBlank
+        /// </summary>
         public static byte DefaultValueInBlank { get; set; }
         static Binary()
         {
             DefaultValueInBlank = 0xff;
         }
 
+        /// <summary>
+        /// This default value will be returned when values out of range are requested 
+        /// </summary>
         public byte ValueInBlank { get; set; }
         private List<Block> _blocks;
+        /// <summary>
+        /// Collection of Block which are held in the Binary
+        /// </summary>
         public IEnumerable<Block> Blocks { get { return _blocks; } }
+        /// <summary>
+        /// Whether parsing from Hex file is completed or not
+        /// </summary>
         public bool IsTerminated { get; internal set; }
+        /// <summary>
+        /// Header text in Hex file, if available
+        /// </summary>
         public string HeaderString { get; set; }
         
         internal Binary()
@@ -59,6 +91,12 @@ namespace HexFileParser
             IsTerminated = false;
         }
 
+        /// <summary>
+        /// Get byte array from certain adress
+        /// </summary>
+        /// <param name="startAddress">address of the Binary to start reading</param>
+        /// <param name="length">lenght in byte to read</param>
+        /// <returns></returns>
         public byte[] GetData(int startAddress, int length)
         {
             var region_start = startAddress;
@@ -95,11 +133,26 @@ namespace HexFileParser
             }
         }
 
+        /// <summary>
+        /// Modify value in certain address with source byte array
+        /// </summary>
+        /// <param name="startAddress">address of the Binary to start modification</param>
+        /// <param name="src">source byte array</param>
+        /// <param name="length">ength in byte to modify</param>
+        /// <returns></returns>
         public bool ModifyData(int startAddress, byte[] src, int length)
         {
             return ModifyData(startAddress, src, 0, length);
         }
 
+        /// <summary>
+        /// Modify value in certain address with source byte array
+        /// </summary>
+        /// <param name="startAddress">address of the Binary to start modification</param>
+        /// <param name="src">source byte array</param>
+        /// <param name="indexSrc">start index of source byte array</param>
+        /// <param name="length">length in byte to modify</param>
+        /// <returns></returns>
         public bool ModifyData(int startAddress, byte[] src, int indexSrc, int length)
         {
             if (!IsTerminated) return false; // loading is not completed

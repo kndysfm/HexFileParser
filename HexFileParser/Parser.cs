@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace HexFileParser
 {
+    /// <summary>
+    /// Hex File Parser object class
+    /// </summary>
     public class Parser
     {
         internal enum LineType
@@ -33,6 +36,9 @@ namespace HexFileParser
         private IFormat _ihex;
         private IFormat _srec;
 
+        /// <summary>
+        /// Format of Hex string, Intel and Motorola are available
+        /// </summary>
         public enum HexFormat
         {
             INTEL_HEX = ':', S_RECORD = 'S'
@@ -45,13 +51,24 @@ namespace HexFileParser
             Reset();
         }
 
+        /// <summary>
+        /// Constructor with binary block data for encoding
+        /// </summary>
+        /// <param name="startAddress">start address of the block</param>
+        /// <param name="bin">binary block data as source</param>
         public Parser(int startAddress, byte[] bin): this()
         {
             DecodedData.AddData(startAddress, bin);
         }
 
         private int _addressOffset;
+        /// <summary>
+        /// Decoded data from Hex string
+        /// </summary>
         public Binary DecodedData { get; private set; }
+        /// <summary>
+        /// Erace all binary data in the instance
+        /// </summary>
         public void Reset()
         {
             _addressOffset = 0x0;
@@ -76,7 +93,10 @@ namespace HexFileParser
             }
             return l;
         }
-
+        /// <summary>
+        /// Decode single line as Hex string 
+        /// </summary>
+        /// <param name="str">single line string</param>
         public void DecodeLine(string str)
         {
             Line l = DecodeLineWithFormat(str);
@@ -100,7 +120,10 @@ namespace HexFileParser
                 default: return;
             }
         }
-
+        /// <summary>
+        /// Decode multiple lines as Hex string
+        /// </summary>
+        /// <param name="str">string includes multiple lines</param>
         public void DecodeLines(string str)
         {
             var lns = str.Split('\n');
@@ -126,7 +149,12 @@ namespace HexFileParser
             }
             return (a == null)? "": new String(a) + "\r\n";
         }
-
+        /// <summary>
+        /// Encode the DecodedData of the instance into string as specified Hex format
+        /// </summary>
+        /// <param name="fmt">Format of Hex string</param>
+        /// <param name="lineLength">Length in byte that is included per a line</param>
+        /// <returns></returns>
         public string EncodeStoredData(HexFormat fmt, byte lineLength)
         {
             var str = "";
