@@ -23,7 +23,7 @@ namespace UnitTestHexFileParser
         {
             var p = new Parser();
             var l = p.DecodeLineWithFormat(":020000021000EC");
-            Assert.IsTrue(l.Valid && l.Type == Parser.LineType.Offset && l.Address == 0x100000);
+            Assert.IsTrue(l.Valid && l.Type == Parser.LineType.Offset && l.Address == 0x010000);
         }
 
         [TestMethod]

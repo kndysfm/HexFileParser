@@ -61,7 +61,7 @@ namespace UnitTestHexFileParser
             p.DecodeLines(str);
             var hex = p.EncodeStoredData(Parser.HexFormat.S_RECORD, (byte)_rnd.Next(8, 30));
             p.DecodeLines(hex);
-            var dat = p.DecodedData.GetData(0x100120, 8);
+            var dat = p.DecodedData.GetData(0x010120, 8);
             CollectionAssert.AreEqual(
                 new byte[] { 0x05, 0x39, 0x05, 0x3F, 0x00, 0x0F, 0x01, 0x06 }, dat);
         }
@@ -100,10 +100,10 @@ namespace UnitTestHexFileParser
 
             var p = new Parser();
             p.DecodeLines(str);
-            p.DecodedData.ModifyData(0x100142,
+            p.DecodedData.ModifyData(0x010142,
                 new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44 }, 2, 3);
 
-            var dat = p.DecodedData.GetData(0x100140, 8);
+            var dat = p.DecodedData.GetData(0x010140, 8);
             CollectionAssert.AreEqual(
                 new byte[] { 0x05, 0x01, 0x22, 0x33, 0x44, 0xBA, 0x0D, 0xB8 }, dat);
         }
