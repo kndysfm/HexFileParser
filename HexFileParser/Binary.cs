@@ -45,7 +45,10 @@ namespace HexFileParser
 
             internal void Append(byte[] data)
             {
-                _data = _data.Concat(data).ToArray();
+                byte[] TmpData = new byte[_data.Length + data.Length];
+                System.Buffer.BlockCopy(_data, 0, TmpData, 0, _data.Length);
+                System.Buffer.BlockCopy(data, 0, TmpData, _data.Length, data.Length);
+                _data = TmpData;
             }
 
             internal void Copy(int address, byte[] src, int idx_src, int length)
